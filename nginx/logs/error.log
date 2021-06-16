@@ -1,0 +1,3 @@
+2021/06/16 21:35:35 [error] 2578#0: *3 "/home/vm/forkmedia-soup-v3/nginx/../../server/public/index.html" is not found (2: No such file or directory), client: 192.168.1.102, server: localhost, request: "GET /?roomId=80080011 HTTP/1.1", host: "192.168.1.10"
+2021/06/16 21:35:48 [error] 2578#0: *10 "/home/vm/forkmedia-soup-v3/nginx/../../server/public/index.html" is not found (2: No such file or directory), client: 192.168.1.102, server: localhost, request: "GET /?roomId=80080011 HTTP/1.1", host: "192.168.1.10"
+2021/06/16 21:39:34 [notice] 2935#0: signal process started
