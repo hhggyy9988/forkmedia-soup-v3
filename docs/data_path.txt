@@ -1,0 +1,81 @@
+第一章: 媒体数据转发
+客户1:
+发送RTP(音频SSRC、视频SSRC不相同)，接收RTCP。[客户1IP, 客户端口1] --> [ 81.71.2.227, 服务端口1] 
+接收RTP(音频SSRC、视频SSRC不相同)，发送RTCP。[客户1IP, 客户端口2] <-- [ 81.71.2.227, 服务端口2] 
+
+客户2:
+发送RTP，接收RTCP。[客户2IP, 客户端口1] --> [ 81.71.2.227, 服务端口3] 
+接收RTP，发送RTCP。[客户2IP, 客户端口2] <-- [ 81.71.2.227, 服务端口4] 
+
+服务器发送RTP:
+[客户1NAT IP, 客户端口1] <--  172.16.0.14, 服务端口2>
+[客户2NAT IP, 客户端口2] <--  172.16.0.14, 服务端口4>
+
+服务器接收RTP:
+[客户2NAT IP, 客户端口1] --> [172.16.0.14, 服务端口1]
+[客户2NAT IP, 客户端口1] --> [172.16.0.14, 服务端口3] 
+
+
+第二章: 命令
+[SS]
+sslocal -p 443 -k "123456" -s 43.128.40.39 -l 1080 -t 600 -m aes-256-cfb
+ssserver -p 443 -k '123456' -m aes-256-cfb -d start
+
+[webrtc git]
+fetch --nohooks webrtc_android && gclient sync
+update code:
+$ git checkout master
+$ git pull origin master
+$ gclient sync
+$ git checkout my-branch
+$ git merge master
+
+[mediasoup-demo]
+git push origin HEAD:v3
+
+[mediasoup-demo-android]
+git push origin HEAD:dev
+
+[log]
+tcpdump -vv -i any -s 0 -w /home/ubuntu/mediasoup-demo/server/public/log/dump.pcap
+sudo DEBUG="*" node server.js | tee /home/ubuntu/mediasoup-demo/server/public/log/log.txt
+git config credential.helper store
+
+https://www.webrtcphone.com/?roomId=80080011
+https://www.webrtcphone.com/log.tgz
+
+
+[带宽估计]
+1. 估计的结果存放在哪？估计结果上报流程？
+A：TargetTransferRate; 
+
+rtp_transport_controller_send.cc (third_party\webrtc\call) @ RtpTransportControllerSend::UpdateControlState()
+void Call::OnTargetTransferRate(TargetTransferRate msg)
+
+2. 估计结果怎么分配到audio,  什么时候生效？
+
+3. 视频分辨率变化的原因？
+A：
+1）带宽估计值不够；
+2）编码视频的QP值在设定的阈值范围外；
+3）通过编码延时计算得到的CPU负载发生变化。
+发生如上情况时，WebRTC会调整采集的原始视频帧分辨率或者帧率，至于是调整采集分辨率还是帧率，依据我们采取的策略，WebRTC中目前存在四种策略：
+1）BALANCED，平衡模式；
+2）MAINTAIN_RESOLUTION，保分辨率模式，也就是清晰模式；
+3）MAINTAIN_FRAMERATE，保帧率模式，也就是流畅模式；
+4）DISABLED，禁用模式。
+例如对于摄像头视频流，默认是流畅模式，我们举两个例子说明下。
+1）如果分配的带宽估计值满足不了当前编码器分辨率的码率设置时，就会触发降低采集视频帧分辨率的操作；
+2）如果检测到CPU负载较高，也会触发降低采集视频帧分辨率的操作。
+这种现象在移动端设备较为明显，会看到视频刚开始很清晰，后面就模糊了（假设带宽足够情况下）。
+当然了，对于屏幕共享流，默认是清晰模式，只会触发降低帧率的操作，看起来视频会变卡。
+
+4. Simulcast层数由分辨率决定。
+A：详见kSimulcastFormats定义。
+
+5. 视频编码器创建过程中VideoEncoderConfig config 传递流程？
+
+
+
+
+
