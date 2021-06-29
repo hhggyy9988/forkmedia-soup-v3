@@ -2,3 +2,5 @@
 server/public
 server/node_modules/mediasoup/worker/out/
 log.txt
+*.log
+*.pyc
